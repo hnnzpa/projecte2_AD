@@ -16,3 +16,6 @@ Segon projecte d Acces a Dades:
 - Gestionar les transaccions.
   
 - Programar components que gestionen informació emmagatzemada en fitxers.
+
+Integrant 1: Ivan
+Integrant 2: Hanna
