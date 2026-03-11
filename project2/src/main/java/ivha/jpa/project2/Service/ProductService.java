@@ -7,12 +7,14 @@ import java.nio.file.Files;
 import java.nio.file.Paths;
 import java.nio.file.Path;
 import java.sql.Timestamp;
+import java.util.List;
 
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.scheduling.config.Task;
 import org.springframework.stereotype.Service;
 import org.springframework.web.multipart.MultipartFile;
 
+import ivha.jpa.project2.DTO.productResponseDTO;
+import ivha.jpa.project2.Model.Product;
 import ivha.jpa.project2.Repository.ProductRepository;
 import ivha.jpa.project2.logs.ProductLogs;
 
@@ -41,7 +43,7 @@ public class ProductService {
             while((linia = br.readLine())!= null){
                 String[] c = linia.split(",");
                 try{
-                    repo.createProduct(new Product(c[0],Integer.parseInt(c[1]),Timestamp.valueOf(c[2]), now, now));
+                    //repo.createProduct(new Product(c[0],Integer.parseInt(c[1]),Timestamp.valueOf(c[2]), now, now));
                     comptador++;
                 } catch(Exception e){
                     msg = log.error("TaskService", "createTasks",
@@ -78,5 +80,20 @@ public class ProductService {
         log.writeToFile(msg);
         // Retornem registres creats
         return comptador;
+    }
+
+    public List<productResponseDTO> searchByNom(String prefix) {
+        // TODO Auto-generated method stub
+        throw new UnsupportedOperationException("Unimplemented method 'searchByField'");
+    }
+
+    public List<productResponseDTO> searchByField(String camp, boolean asc) {
+        // TODO Auto-generated method stub
+        throw new UnsupportedOperationException("Unimplemented method 'searchByField'");
+    }
+
+    public List<productResponseDTO> getBestQP() {
+        // TODO Auto-generated method stub
+        throw new UnsupportedOperationException("Unimplemented method 'getBestQP'");
     }
 }
