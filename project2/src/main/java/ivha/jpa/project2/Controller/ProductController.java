@@ -5,16 +5,16 @@ import java.util.List;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
+import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
+import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
 import org.springframework.web.multipart.MultipartFile;
 
 import ivha.jpa.project2.DTO.productResponseDTO;
 import ivha.jpa.project2.Service.ProductService;
-import org.springframework.web.bind.annotation.GetMapping;
-import org.springframework.web.bind.annotation.RequestParam;
 
 
 @RestController
@@ -27,7 +27,7 @@ public class ProductController {
     // Integrant 1 - Ivan
     
     @PostMapping("products/batch")
-    public ResponseEntity<String> importTasks(@RequestBody MultipartFile csv) {
+    public ResponseEntity<String> importProducts(@RequestBody MultipartFile csv) {
         try {
             service.createProducts(csv);
             return ResponseEntity.ok("Productes creats");
@@ -42,12 +42,17 @@ public class ProductController {
         return ResponseEntity.ok(products);
     }
 
+
+    // Hay que especificar el campo o es preu siempre?
+    // Hay muchos endpoints get con /products/search/order
+    // El primer endpoint de jpql, que es limit?
     @GetMapping("/products/search/order")
     public ResponseEntity<List<productResponseDTO>> searchByField(@RequestParam String camp, @RequestParam boolean asc) {
         List<productResponseDTO> products = service.searchByField(camp, asc);
         return ResponseEntity.ok(products);
     }
 
+    // Cómo calculamos calidad/precio?
     @GetMapping("/products/bestQP")
     public ResponseEntity<List<productResponseDTO>> getBestQP() {
         List<productResponseDTO> products = service.getBestQP();
