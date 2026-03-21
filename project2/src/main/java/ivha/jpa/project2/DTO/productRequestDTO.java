@@ -1,22 +1,24 @@
 package ivha.jpa.project2.DTO;
 
-import java.security.Timestamp;
-
 import ivha.jpa.project2.Model.Condition;
 
 public class productRequestDTO {
-    private Long id;
+
     private String nom;
     private String descripcio;
     private Integer stock;
-    private Float preu;
-    private Condition condition;
-    private boolean active;
 
-    public Long getId() {
-        return id;
+    public productRequestDTO(String nom, String descripcio, Integer stock, Float price, Float rating,
+            Condition condition, boolean active) {
+        this.nom = nom;
+        this.descripcio = descripcio;
+        this.stock = stock;
+        this.price = price;
+        this.rating = rating;
+        this.condition = condition;
+        this.active = active;
     }
-
+    
     public String getNom() {
         return nom;
     }
@@ -35,11 +37,17 @@ public class productRequestDTO {
     public void setStock(Integer stock) {
         this.stock = stock;
     }
-    public Float getPreu() {
-        return preu;
+    public Float getPrice() {
+        return price;
     }
-    public void setPreu(Float preu) {
-        this.preu = preu;
+    public void setPrice(Float price) {
+        this.price = price;
+    }
+    public Float getRating() {
+        return rating;
+    }
+    public void setRating(Float rating) {
+        this.rating = rating;
     }
     public Condition getCondition() {
         return condition;
@@ -53,6 +61,11 @@ public class productRequestDTO {
     public void setActive(boolean active) {
         this.active = active;
     }
-    
-}
+    private Float price;
+    private Float rating;
+    private Condition condition;
+    private boolean active;
 
+    
+
+}

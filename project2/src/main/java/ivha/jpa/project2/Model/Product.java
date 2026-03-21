@@ -2,6 +2,7 @@ package ivha.jpa.project2.Model;
 
 import java.sql.Timestamp;
 
+import jakarta.persistence.Column;
 import jakarta.persistence.Entity;
 import jakarta.persistence.GeneratedValue;
 import jakarta.persistence.Id;
@@ -11,10 +12,14 @@ public class Product {
     @Id
     @GeneratedValue 
     private Long id;
+    @Column(nullable=false, length=20)
     private String nom;
+    @Column(length=100)
     private String descripcio;
+    @Column(nullable=false)
     private Integer stock;
-    private Float preu;
+    @Column(nullable=false)
+    private Float price;
     private Float rating;
     private Condition condition;
     private boolean active; 
@@ -33,6 +38,34 @@ public class Product {
         this.descripcio = descripcio;
         this.stock = stock;
         this.preu = preu;
+        this.rating = rating;
+        this.condition = condition;
+        this.active = active;
+        this.dateCreated = dateCreated;
+        this.dateUpdated = dateUpdated;
+    }
+
+    public Product(String nom, String descripcio, Integer stock, Float price, Float rating,
+            Condition condition, boolean active, Timestamp dateCreated, Timestamp dateUpdated) {
+        
+        this.nom = nom;
+        this.descripcio = descripcio;
+        this.stock = stock;
+        this.price = price;
+        this.rating = rating;
+        this.condition = condition;
+        this.active = active;
+        this.dateCreated = dateCreated;
+        this.dateUpdated = dateUpdated;
+    }
+
+    public Product(String nom, String descripcio, Integer stock, Float price, Float rating,
+            Condition condition, boolean active, Timestamp dateCreated, Timestamp dateUpdated) {
+        
+        this.nom = nom;
+        this.descripcio = descripcio;
+        this.stock = stock;
+        this.price = price;
         this.rating = rating;
         this.condition = condition;
         this.active = active;
