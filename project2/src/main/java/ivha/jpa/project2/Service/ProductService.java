@@ -33,6 +33,28 @@ public class ProductService {
     @Autowired
     ProductMapper mapper;
 
+    public void loadFakeData() {
+        List<Product> products = new ArrayList<>();
+        
+        // Datos para crear 20 productos
+        String[] noms = {"Smartphone", "Portàtil", "Auriculars", "Monitor", "Teclat", "Ratolí", "Càmera", "Tauleta", "Disc Dur", "Altaveu", "Cadira", "Smartwatch", "Impressora", "Microfon", "Router", "Webcam", "Bateria", "Projector", "MicroSD", "Ventilador"};
+        
+        for (int i = 0; i < 20; i++) {
+            Product p = new Product();
+            p.setNom(noms[i] + " " + (i + 1));
+            p.setDescripcio("Descripció del producte " + (i + 1));
+            p.setStock(10 + i);
+            p.setPrice(10.0f * (i + 1));
+            p.setRating((float) (i % 10 + 1)); // Rating entre 1 i 10
+            p.setCondition(Condition.NOU); 
+            p.setActive(true);
+            // JPA gestionará el ID y las fechas si usas @UpdateTimestamp
+            products.add(p);
+        }
+        
+        repo.saveAll(products);
+    }
+
 
     // Punt 2 - Càrrega massiva de dades d’un fitxer en format .csv amb transactional
     // Carrega tots els registres o cap
@@ -118,6 +140,86 @@ public class ProductService {
         repo.deleteById(id);
     }
 
+
+    //obtenir un producte per id
+        public productResponseDTO getProductById(Long id){
+            try{
+                Optional<Product> p = repo.findById(id);
+                if(p.isPresent()){
+                    return mapper.toProductResponseDTO(p.get());
+                } else {
+                    return null;
+                }
+            } catch (Exception e){ // en cas d'un error inesperat, retornem null i guardem l'error al log
+                return null;
+            }
+        }
+
+        // modificar tots els camps del producte
+        public boolean updateProduct(Long id, productRequestDTO productRequest){
+            try{
+                Optional<Product> optionalProduct = repo.findById(id);
+                if(optionalProduct.isPresent()){
+                    Product p = optionalProduct.get();
+                    p.setNom(productRequest.getNom());
+                    p.setPrice(productRequest.getPrice());
+                    p.setDateUpdated(new Timestamp(System.currentTimeMillis()));
+                    p.setDescripcio(productRequest.getDescripcio());
+                    p.setStock(productRequest.getStock());
+                    p.setCondition(productRequest.getCondition());
+                    p.setActive(productRequest.isActive());
+                    p.setDateUpdated(new Timestamp(System.currentTimeMillis()));
+                    // guardem el producte amb les modificacions
+                    repo.save(p);
+                    return true;
+                } else {
+                    return false;
+                }
+            } catch (Exception e){ // en cas d'un error inesperat, retornem false i guardem l'error al log
+                return false;
+            }
+        }
+
+        // modificar preu producte
+        public boolean updatePreuProducte(Long id, double preu){
+            try{
+                Optional<Product> optionalProduct = repo.findById(id);
+                if(optionalProduct.isPresent()){
+                    Product p = optionalProduct.get();
+                    p.setPrice((float) preu);
+                    p.setDateUpdated(new Timestamp(System.currentTimeMillis()));
+                    // guardem el producte amb el nou preu
+                    repo.save(p);
+                    return true;
+                } else {
+                    return false;
+                }
+            } catch (Exception e){ // en cas d'un error inesperat, retornem false i guardem l'error al log
+                return false;
+            }
+        }
+
+        // borrat lògic d'un producte
+        public boolean deleteProductLogic(Long id){
+            try{
+                Optional<Product> optionalProduct = repo.findById(id);
+                if(optionalProduct.isPresent()){
+                    Product p = optionalProduct.get();
+                    p.setActive(false);
+                    p.setDateUpdated(new Timestamp(System.currentTimeMillis()));
+                    
+                    // guardem el producte amb active a false
+                    repo.save(p);
+                    return true;
+                } else {
+                    return false;
+                }
+            } catch (Exception e){ // en cas d'un error inesperat, retornem false i guardem l'error al log
+                return false;
+            }
+        }
+
+
     // Punt 4 - Consultes bàsiques amb Query Method
 
     // Búsqueda per prefix
@@ -133,7 +235,7 @@ public class ProductService {
         return response;
     }
 
-    // Ordena els productes ascendent o descendent en funció del camp passat per paràmetre
+    // Ordena els productes ascendent o descendent en funció del camp passat per paràmetre (preu o rating)
     public List<productResponseDTO> searchByField(String camp, String order) {
         if (!(order.equals("asc") || order.equals("desc"))){
             throw new UnsupportedOperationException ("order ha der ser 'asc' o 'desc'");
@@ -154,8 +256,35 @@ public class ProductService {
             return response;
             
         }
+
+        // camp = rating
+        if(camp.equals("rating")){
+            if (order.equals("asc")){
+                products = repo.findByActiveTrueOrderByRatingAsc();
+            } else {
+                products = repo.findByActiveTrueOrderByRatingDesc();
+            }
+            for (Product p: products){
+                response.add(mapper.toProductResponseDTO(p));
+            }
+            return response;
+            
+        }
+
         return null;
     }
+
+    public List<productResponseDTO> findByCondition(Condition condition) {
+        List<Product> productes = repo.findByConditionAndActiveTrue(condition);
+        List<productResponseDTO> response = new ArrayList<>();
+
+        for (Product p: productes){
+                response.add(mapper.toProductResponseDTO(p));
+        }
+        return response;
+    }
+
+
 
     // Punt 5 - Consultes amb JPQL
 
@@ -222,5 +351,67 @@ public class ProductService {
         return response;
     }
 
-    
+
+    //!!!!! Cual es el campo???? Retorna els productes amb el preu superior del indicat en el minPrice
+    public List<productResponseDTO> findByPriceMin(String camp, String order, float priceMin, int limit) {
+        if (!(order.equals("asc") || order.equals("desc"))){
+            throw new UnsupportedOperationException ("order ha der ser 'asc' o 'desc'");
+        }
+
+        List<Product> productes;
+        List<productResponseDTO> response = new ArrayList<>();
+        if (camp.equals("preuMinim")){
+            if (order.equals("asc")){
+                productes = repo.findByPriceMinAsc(priceMin);
+            } else {
+                productes = repo.findByPriceMinDesc(priceMin);
+            }
+        } else {
+            throw new UnsupportedOperationException ("camp ha de ser 'preuMinim'");
+        }
+        
+        for (Product p: productes){
+            response.add(mapper.toProductResponseDTO(p));
+        }
+        return response;
+    }
+
+
+
+    // Retorna els 10 productes nous amb millor rating (valoracio)
+    public List<productResponseDTO> getBestNew(){
+        List<Product> productes = repo.getBN(Condition.NOU);
+        List<productResponseDTO> response = new ArrayList<>();
+        List<Product> primers10;
+
+        if (productes.size() > 10){
+            primers10 = productes.subList(0, 10);
+        } else {
+            primers10 = productes;
+        }
+
+        for (Product p: primers10){
+            response.add(mapper.toProductResponseDTO(p));
+        }
+
+        return response;
+    }
+
+    // Punt 6 - Paginació
+
+    //Retorna els productes en blocs de 5
+    public List<productResponseDTO> get5Products(int pag, int size){
+        List<Product> productes = repo.findAll();
+        List<productResponseDTO> response = new ArrayList<>();
+        
+        for (Product p: productes){
+            response.add(mapper.toProductResponseDTO(p));
+        }
+
+        return response.stream()
+            .skip((pag - 1) * size)
+            .limit(size)
+            .toList();
+    }
+
 }

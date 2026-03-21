@@ -4,8 +4,11 @@ import java.util.List;
 
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.data.jpa.repository.Query;
+import org.springframework.data.repository.query.Param;
 
 import ivha.jpa.project2.Model.Product;
+import ivha.jpa.project2.Model.Condition;
+
 
 
 public interface ProductRepository extends JpaRepository<Product, Long> {
@@ -14,6 +17,10 @@ public interface ProductRepository extends JpaRepository<Product, Long> {
     public List<Product>  findByNomStartingWithAndActiveTrue(String nom);
     public List<Product> findByActiveTrueOrderByPriceAsc();
     public List<Product> findByActiveTrueOrderByPriceDesc();
+
+    public List<Product> findByConditionAndActiveTrue(Condition condition);
+    public List<Product> findByActiveTrueOrderByRatingAsc();
+    public List<Product> findByActiveTrueOrderByRatingDesc();
     
     // Punt 5 -  Consultes amb JPQL
 
@@ -33,5 +40,22 @@ public interface ProductRepository extends JpaRepository<Product, Long> {
     // Retorna tots el productes ordenats per qualitat/preu descendent
     @Query("select p from Product p where p.active = true order by (p.rating / p.price) desc")
     List<Product> findBestQp();
+
+    //Retorna els mes nous i millor valorats (menor preu major rating)
+    @Query("SELECT p FROM Product p " +
+        "WHERE p.condition = :cond " +
+        "AND p.active = true " +
+        "AND p.rating = (SELECT MAX(p2.rating) FROM Product p2 WHERE p2.condition = :cond AND p2.active = true)" +
+        "AND p.price = (SELECT MIN(p2.price) FROM Product p2 WHERE p2.condition = :cond AND p2.active = true)")    
+    List<Product> getBN(@Param("cond") Condition cond);
+
+    // Retorna els productes amb el preu minim indicat ascendentment
+    @Query("select p from Product p where p.price >= :priceMin and p.active = true order by (p.rating) asc")
+    List<Product> findByPriceMinAsc(float priceMin);
+
+    // Retorna els productes amb el preu minim indicat descendentment
+    @Query("select p from Product p where p.price >= :priceMin and p.active = true order by (p.rating) desc")
+    List<Product> findByPriceMinDesc(float priceMin);
+
 
 }

@@ -2,6 +2,7 @@ package ivha.jpa.project2.Controller;
 
 
 import java.util.List;
+import java.util.Optional;
 
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
@@ -11,6 +12,7 @@ import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PatchMapping;
 import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.PostMapping;
+import org.springframework.web.bind.annotation.PutMapping;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestParam;
@@ -19,6 +21,7 @@ import org.springframework.web.multipart.MultipartFile;
 
 import ivha.jpa.project2.DTO.productRequestDTO;
 import ivha.jpa.project2.DTO.productResponseDTO;
+import ivha.jpa.project2.Model.Condition;
 import ivha.jpa.project2.Service.ProductService;
 
 
@@ -28,6 +31,18 @@ public class ProductController {
 
     @Autowired
     ProductService service;
+
+
+    @PostMapping("/seed")
+    public ResponseEntity<String> seedDatabase() {
+        try {
+            service.loadFakeData();
+            return ResponseEntity.ok("20 productes creats amb èxit a la base de dades!");
+        } catch (Exception e) {
+            return ResponseEntity.internalServerError().body("Error: " + e.getMessage());
+        }
+    }
+
 
     // Punt 2 - Càrrega massiva de dades d’un fitxer en format .csv
     @PostMapping("products/batch")
@@ -39,46 +54,71 @@ public class ProductController {
             return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body("No s'han pogut importar els productes");
         }
     }
-    
-    // Punt 3 - Endpoints simples
 
-    // Consultar tots els productes
-    @GetMapping("/products")
-    public ResponseEntity<List<productResponseDTO>> findAllProducts() {
-        try {
-            List<productResponseDTO> products = service.findAllProducts();
-            return ResponseEntity.ok(products);
-        } catch (Exception e) {
-            return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(null);
-        }
-        
-    }
 
-    // Afegir un producte
-    @PostMapping("/products")
-    public ResponseEntity<String> createProduct(@RequestBody productRequestDTO product) {
-        try {
-            service.createProduct(product);
-            return ResponseEntity.ok("S'ha creat el producte");
-        } catch (Exception e) {
-            return ResponseEntity.status(HttpStatus.BAD_REQUEST).body("No s'ha pogut crear el producte");
-        }
-        
-    }
-    
-    // Modificar l’estoc de productes
-    @PatchMapping("/products/{id}/stock/{stock}")
-    public ResponseEntity<String> updateStock(@PathVariable long id, @PathVariable int stock){
+
+
+    // consultar un producte x id
+    @GetMapping("/product/{id}")
+    public ResponseEntity<productResponseDTO> getProductById(@PathVariable Long id){
         try{
-            if (service.updateStock(id, stock)){
-               return ResponseEntity.ok("Modificat l'estoc del producte"); 
+            productResponseDTO product = service.getProductById(id);
+            if(product != null){
+                return ResponseEntity.ok(product);
+            } else {
+                return ResponseEntity.notFound().build(); // retornem un 404 si no trobem el producte
             }
-            return ResponseEntity.status(HttpStatus.BAD_REQUEST).body("No s'ha pogut modificar l'estoc del producte");
-  
         } catch (Exception e){
-            return ResponseEntity.status(HttpStatus.BAD_REQUEST).body("No s'ha pogut modificar l'estoc del producte");
+            return ResponseEntity.internalServerError().build(); // retornem un 500 en cas d'un error inesperat 
         }
     }
+
+
+    // modificar tots els camps del producte
+    @PutMapping("/product/update/{id}")
+    public ResponseEntity<String> updateProduct(@PathVariable Long id, @RequestBody productRequestDTO productRequest){
+        try{
+            boolean updated = service.updateProduct(id, productRequest);
+            if(updated){
+                return ResponseEntity.ok("Producte actualitzat");
+            } else {
+                return ResponseEntity.status(HttpStatus.NOT_FOUND).body("Producte no trobat");
+            }
+        } catch (Exception e){
+            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body("Error al modificar el producte");
+        }
+    }
+
+    // modificar preu producte
+    @PatchMapping("/product/update/preu/{id}")
+    public ResponseEntity<String> updatePreuProducte(@PathVariable Long id, @RequestBody double preu){
+        try{
+            boolean updated = service.updatePreuProducte(id, preu);
+            if(updated){
+                return ResponseEntity.ok("Preu del producte actualitzat");
+            } else {
+                return ResponseEntity.status(HttpStatus.NOT_FOUND).body("Producte no trobat");
+            }
+        } catch (Exception e){
+            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body("Error al modificar el preu del producte");
+        }
+    }
+
+    // borrat lògic d'un producte
+    @DeleteMapping("/product/logic/delete/{id}")
+    public ResponseEntity<String> deleteProductLogic(@PathVariable Long id){
+        try{
+            boolean deleted = service.deleteProductLogic(id);
+            if(deleted){
+                return ResponseEntity.ok("Producte eliminat lògicament");
+            } else {
+                return ResponseEntity.status(HttpStatus.NOT_FOUND).body("Producte no trobat");
+            }
+        } catch (Exception e){
+            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body("Error al eliminar el producte");
+        }
+    }
+
     
     // Borrat físic d'un producte
     @DeleteMapping("/products/{id}")
@@ -105,6 +145,7 @@ public class ProductController {
         
     }
 
+
     // Ordena els productes per preu o rating ascendent o descendent
     @GetMapping("/products/search/order")
     public ResponseEntity<List<productResponseDTO>> searchByField(@RequestParam String camp, @RequestParam String order) {
@@ -116,6 +157,20 @@ public class ProductController {
         }
         
     }
+
+
+    // Busca productes per condició
+    @GetMapping("/products/search/condition")
+    public ResponseEntity<List<productResponseDTO>> findByCondition(@RequestParam("condition") Condition condition) {
+        System.out.println("He recibido la peticion con: " + condition);
+        try {
+            List<productResponseDTO> products = service.findByCondition(condition);
+            return ResponseEntity.ok(products);
+        } catch (Exception e) {
+            return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(null);
+        }
+    }
+
 
     // Punt 5 -  Consultes amb JPQL
 
@@ -143,8 +198,43 @@ public class ProductController {
         }
     }
 
-    
-    
-    
-    
+
+    // Retorna productes amb preu superior al indicat i estigui active true
+    @GetMapping("/products/search/order3")
+    public ResponseEntity<List<productResponseDTO>> findByPriceMin( 
+        @RequestParam(defaultValue = "preuMinim") String camp, @RequestParam(defaultValue = "desc") String order, @RequestParam float priceMin, @RequestParam int limit
+    ) {
+        try {
+            List<productResponseDTO> products = service.findByPriceMin(camp, order, priceMin, limit);
+            return ResponseEntity.ok(products);
+        } catch (Exception e) {
+            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body(null);
+        }
+    }
+
+    //Obtenir els productes més nous i millor valorats (menor preu major rating)
+    @GetMapping("/products/bestNew")
+    public ResponseEntity<List<productResponseDTO>> getBestNew() {
+        try {
+            List<productResponseDTO> products = service.getBestNew();
+            return ResponseEntity.ok(products);
+        } catch (Exception e) {
+            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body(null);
+        }
+    }
+
+    //Retorna productes en blocs de 5
+    @GetMapping("/products/get5")
+    public ResponseEntity<List<productResponseDTO>> get5Products(
+        @RequestParam(defaultValue = "1") int pag,
+        @RequestParam(defaultValue = "5") int size
+    ) {
+        try {
+            List<productResponseDTO> products = service.get5Products(pag, size);
+            return ResponseEntity.ok(products);
+        } catch (Exception e) {
+            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body(null);
+        }
+    }
+
 }
