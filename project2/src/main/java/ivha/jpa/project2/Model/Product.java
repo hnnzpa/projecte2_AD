@@ -1,6 +1,6 @@
 package ivha.jpa.project2.Model;
 
-import java.security.Timestamp;
+import java.sql.Timestamp;
 
 import jakarta.persistence.Entity;
 import jakarta.persistence.GeneratedValue;
@@ -14,7 +14,7 @@ public class Product {
     private String nom;
     private String descripcio;
     private Integer stock;
-    private Float price;
+    private Float preu;
     private Float rating;
     private Condition condition;
     private boolean active; 
@@ -26,13 +26,13 @@ public class Product {
     }
 
 
-    public Product(Long id, String nom, String descripcio, Integer stock, Float price, Float rating,
+    public Product(Long id, String nom, String descripcio, Integer stock, Float preu, Float rating,
             Condition condition, boolean active, Timestamp dateCreated, Timestamp dateUpdated) {
         this.id = id;
         this.nom = nom;
         this.descripcio = descripcio;
         this.stock = stock;
-        this.price = price;
+        this.preu = preu;
         this.rating = rating;
         this.condition = condition;
         this.active = active;
@@ -81,13 +81,13 @@ public class Product {
     }
 
 
-    public Float getPrice() {
-        return price;
+    public Float getPreu() {
+        return preu;
     }
 
 
-    public void setPrice(Float price) {
-        this.price = price;
+    public void setPreu(Float preu) {
+        this.preu = preu;
     }
 
 

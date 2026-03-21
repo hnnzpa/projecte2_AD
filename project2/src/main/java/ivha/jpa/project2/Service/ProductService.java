@@ -7,12 +7,16 @@ import java.nio.file.Files;
 import java.nio.file.Paths;
 import java.nio.file.Path;
 import java.sql.Timestamp;
+import java.util.Optional;
 
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.scheduling.config.Task;
 import org.springframework.stereotype.Service;
 import org.springframework.web.multipart.MultipartFile;
 
+import ivha.jpa.project2.DTO.productRequestDTO;
+import ivha.jpa.project2.DTO.productResponseDTO;
+import ivha.jpa.project2.Model.Product;
 import ivha.jpa.project2.Repository.ProductRepository;
 import ivha.jpa.project2.logs.ProductLogs;
 
@@ -78,5 +82,91 @@ public class ProductService {
         log.writeToFile(msg);
         // Retornem registres creats
         return comptador;
-    }
+
+
+
+
+
+
+
+        //obtenir un producte per id
+        public Product getProductById(Long id){
+            try{
+                Product p = repo.findById(id);
+                if(p != null){
+                    return p;
+                } else {
+                    return null;
+                }
+            } catch (Exception e){ // en cas d'un error inesperat, retornem null i guardem l'error al log
+                log.writeToFile(log.error("ProductService", "getProductById", "Error al consultar el producte amb id " + id + ". Missatge d'error: " + e));
+                return null;
+            }
+        }
+
+        // modificar tots els camps del producte
+        public boolean updateProduct(Long id, productRequestDTO productRequest){
+            try{
+                Optional<Product> optionalProduct = repo.findById(id);
+                if(optionalProduct.isPresent()){
+                    Product p = optionalProduct.get();
+                    p.setNom(productRequest.getNom());
+                    p.setPreu(productRequest.getPreu());
+                    p.setDateUpdated(new Timestamp(System.currentTimeMillis()));
+                    p.setDescripcio(productRequest.getDescripcio());
+                    p.setStock(productRequest.getStock());
+                    p.setCondition(productRequest.getCondition());
+                    p.setActive(productRequest.isActive());
+                    // guardem el producte amb les modificacions
+                    repo.save(p);
+                    return true;
+                } else {
+                    return false;
+                }
+            } catch (Exception e){ // en cas d'un error inesperat, retornem false i guardem l'error al log
+                log.writeToFile(log.error("ProductService", "updateProduct", "Error al modificar el producte amb id " + id + ". Missatge d'error: " + e));
+                return false;
+            }
+        }
+
+        // modificar preu producte
+        public boolean updatePreuProducte(Long id, double preu){
+            try{
+                Optional<Product> optionalProduct = repo.findById(id);
+                if(optionalProduct.isPresent()){
+                    Product p = optionalProduct.get();
+                    p.setPreu((float) preu);
+                    p.setDateUpdated(new Timestamp(System.currentTimeMillis()));
+                    // guardem el producte amb el nou preu
+                    repo.save(p);
+                    return true;
+                } else {
+                    return false;
+                }
+            } catch (Exception e){ // en cas d'un error inesperat, retornem false i guardem l'error al log
+                log.writeToFile(log.error("ProductService", "updatePreuProducte", "Error al modificar el preu del producte amb id " + id + ". Missatge d'error: " + e));
+                return false;
+            }
+        }
+
+        // borrat lògic d'un producte
+        public boolean deleteProductLogic(Long id){
+            try{
+                Optional<Product> optionalProduct = repo.findById(id);
+                if(optionalProduct.isPresent()){
+                    Product p = optionalProduct.get();
+                    p.setActive(false);
+                    p.setDateUpdated(new Timestamp(System.currentTimeMillis()));
+                    
+                    // guardem el producte amb active a false
+                    repo.save(p);
+                    return true;
+                } else {
+                    return false;
+                }
+            } catch (Exception e){ // en cas d'un error inesperat, retornem false i guardem l'error al log
+                log.writeToFile(log.error("ProductService", "deleteProductLogic", "Error al eliminar lògicament el producte amb id " + id + ". Missatge d'error: " + e));
+                return false;
+            }
+        }
 }
