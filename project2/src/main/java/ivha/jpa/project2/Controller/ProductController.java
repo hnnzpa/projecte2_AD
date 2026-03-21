@@ -1,6 +1,6 @@
 package ivha.jpa.project2.Controller;
 
-import java.awt.image.RescaleOp;
+
 import java.util.List;
 
 import org.springframework.beans.factory.annotation.Autowired;
@@ -92,6 +92,7 @@ public class ProductController {
     }
 
     // Punt 4 - Consultes bàsiques amb Query Method
+    
     @GetMapping("/products/search/nom")
     public ResponseEntity<List<productResponseDTO>> searchByNom(@RequestParam String prefix) {
         try {
@@ -103,18 +104,22 @@ public class ProductController {
         
     }
 
-
-    // Hay que especificar el campo o es preu siempre?
-    // Hay muchos endpoints get con /products/search/order
-    // El primer endpoint de jpql, que es limit?
     @GetMapping("/products/search/order")
-    public ResponseEntity<List<productResponseDTO>> searchByField(@RequestParam String camp, @RequestParam boolean asc) {
-        List<productResponseDTO> products = service.searchByField(camp, asc);
+    public ResponseEntity<List<productResponseDTO>> searchByField(@RequestParam String camp, @RequestParam String order) {
+        List<productResponseDTO> products = service.searchByField(camp, order);
         return ResponseEntity.ok(products);
     }
 
     // Punt 5 -  Consultes amb JPQL
-    // Cómo calculamos calidad/precio?
+
+    @GetMapping("/products/search/order2")
+    public ResponseEntity<List<productResponseDTO>> searchByField(
+        @RequestParam String camp, @RequestParam String order, @RequestParam float priceMin, @RequestParam float priceMax, @RequestParam int limit
+    ) {
+        List<productResponseDTO> products = service.searchByField(camp, order, priceMin, priceMax, limit);
+        return ResponseEntity.ok(products);
+    }
+
     @GetMapping("/products/bestQP")
     public ResponseEntity<List<productResponseDTO>> getBestQP() {
         List<productResponseDTO> products = service.getBestQP();
