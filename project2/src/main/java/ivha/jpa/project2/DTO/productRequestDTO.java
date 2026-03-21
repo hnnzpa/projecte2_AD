@@ -7,6 +7,10 @@ public class productRequestDTO {
     private String nom;
     private String descripcio;
     private Integer stock;
+    private Float price;
+    private Float rating;
+    private Condition condition;
+    private boolean active;
 
     public productRequestDTO(String nom, String descripcio, Integer stock, Float price, Float rating,
             Condition condition, boolean active) {
@@ -61,10 +65,7 @@ public class productRequestDTO {
     public void setActive(boolean active) {
         this.active = active;
     }
-    private Float price;
-    private Float rating;
-    private Condition condition;
-    private boolean active;
+    
 
     
 
