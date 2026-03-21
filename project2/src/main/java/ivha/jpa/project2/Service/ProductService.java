@@ -4,8 +4,8 @@ import java.io.BufferedReader;
 import java.io.IOException;
 import java.io.InputStreamReader;
 import java.nio.file.Files;
-import java.nio.file.Paths;
 import java.nio.file.Path;
+import java.nio.file.Paths;
 import java.sql.Timestamp;
 import java.util.ArrayList;
 import java.util.List;
@@ -18,17 +18,14 @@ import org.springframework.web.multipart.MultipartFile;
 import ivha.jpa.project2.DTO.productRequestDTO;
 import ivha.jpa.project2.DTO.productResponseDTO;
 import ivha.jpa.project2.Mapper.ProductMapper;
-import ivha.jpa.project2.Model.Product;
 import ivha.jpa.project2.Model.Condition;
+import ivha.jpa.project2.Model.Product;
 import ivha.jpa.project2.Repository.ProductRepository;
-import ivha.jpa.project2.logs.ProductLogs;
 import jakarta.transaction.Transactional;
 
 @Service
 public class ProductService {
 
-    @Autowired
-    ProductLogs log;
 
     @Autowired
     ProductRepository repo;
@@ -41,18 +38,14 @@ public class ProductService {
 
     @Transactional
     public int createProducts(MultipartFile csv) throws IOException{
-        String msg = log.info("ProductService", "createProducts", "Carregant la informació del fitxer " + csv.getName());
-        log.writeToFile(msg);
 
         int comptador = 0;
-        int erronis = 0;
 
         
         Timestamp now = new Timestamp(System.currentTimeMillis());
         // Llegim amb buffered reader
         try(BufferedReader br = new BufferedReader(new InputStreamReader(csv.getInputStream()))){
             String linia;
-            int nLinia = 1;
             while((linia = br.readLine())!= null){
                 String[] c = linia.split(",");
                 try{
@@ -68,19 +61,13 @@ public class ProductService {
                         now));
                     comptador++;
                 } catch(Exception e){
-                    msg = log.error("ProductService", "createProducts",
-                        String.format("Error en la línia %d del fitxer. Missatge d'error: %s",nLinia,e));
-                    log.writeToFile(msg);
-                    erronis++;
+                    System.err.println("Error en el guardat d'un registre: " + e.getMessage());
                 }
-                nLinia++;
             }
 
         } catch (IOException e){
             System.err.println("Error d'accès al fitxer: " + e.getMessage());
-           msg = log.error("ProductService", "createProducts", "Error de lectura de l'arxiu");
-           log.writeToFile(msg);
-           return -1;
+            return -1;
         }
         String dir = "src/main/resources/private/csv_processed";
         Path directory = Paths.get(dir);
@@ -94,14 +81,146 @@ public class ProductService {
         }
         catch (Exception e){
             System.err.println("No s'ha pogut guardar el csv");
-            msg = log.error("ProductService", "createProducts", "No s'ha pogut guardar l'arxiu");
-            log.writeToFile(msg);
+            
         }
-        msg = log.info("ProductService", "createProducts",
-            String.format("S'han guardat correctament %d registres i han donat error %d registres",comptador, erronis));
-        log.writeToFile(msg);
         // Retornem registres creats
         return comptador;
+    }
+
+    // Punt 3 - Endpoints simples
+
+    // Consultar tots els productes
+    public List<productResponseDTO> findAllProducts() {
+        List<Product> productes =  repo.findAll();
+        List<productResponseDTO> response = new ArrayList<>();
+
+        for (Product p: productes){
+            response.add(mapper.toProductResponseDTO(p));
+        }
+        return response;
+    }
+
+    // Afegir un producte
+    public void createProduct(productRequestDTO product) {
+        Product p = mapper.toProduct(product);
+        repo.save(p);
+    }
+
+    // Modificar l’estoc de productes
+    public boolean updateStock(long id, int stock){
+        Optional<Product> p = repo.findById(id);
+        if (p.isEmpty()){
+            return false;
+        }
+        Product producte = p.get();
+        producte.setStock(stock);
+        return true;
+    }
+
+    // Borrat físic d'un producte
+    public void deleteProduct(long id) {
+        repo.deleteById(id);
+    }
+
+    // Punt 4 - Consultes bàsiques amb Query Method
+    public List<productResponseDTO> searchByNom(String prefix) {
+        List<Product> productes = repo.findByNomStartingWithAndActiveTrue(prefix);
+        List<productResponseDTO> response = new ArrayList<>();
+
+        for (Product p: productes){
+            response.add(mapper.toProductResponseDTO(p));
+        }
+
+        return response;
+    }
+
+    public List<productResponseDTO> searchByField(String camp, String order) {
+        if (!(order.equals("asc") || order.equals("desc"))){
+            throw new UnsupportedOperationException ("order ha der ser 'asc' o 'desc'");
+        }
+
+        List<Product> products;
+        List<productResponseDTO> response = new ArrayList<>();
+
+        if (camp.equals("preu")){
+            if (order.equals("asc")){
+                products = repo.findByActiveTrueOrderByPriceAsc();
+            } else {
+                products = repo.findByActiveTrueOrderByPriceDesc();
+            }
+            for (Product p: products){
+                response.add(mapper.toProductResponseDTO(p));
+            }
+            return response;
+            
+        }
+        return null;
+    }
+
+    // Punt 5 -  Consultes amb JPQL
+
+    public List<productResponseDTO> searchByField(String camp, String order, float priceMin, float priceMax, int limit) {
+        if (!(order.equals("asc") || order.equals("desc"))){
+            throw new UnsupportedOperationException ("order ha der ser 'asc' o 'desc'");
+        }
+
+        List<Product> products;
+        List<productResponseDTO> response = new ArrayList<>();
+
+        if (camp.equals("preu")){
+            if (order.equals("asc")){
+                products = repo.findByPriceAsc(priceMin, priceMax);
+            } else {
+                products = repo.findByPriceDesc(priceMin, priceMax);
+            }
+
+            if (limit > products.size()) limit = products.size();
+            
+            for (int i = 0; i < limit; i++){
+                response.add(mapper.toProductResponseDTO(products.get(i)));
+            }
+            return response;
+            
+        }
+
+        if (camp.equals("rating")){
+            if (order.equals("asc")){
+                products = repo.findByPriceAsc(priceMin, priceMax);
+            } else {
+                products = repo.findByPriceDesc(priceMin, priceMax);
+            }
+
+            if (limit > products.size()) limit = products.size();
+            
+            for (int i = 0; i < limit; i++){
+                response.add(mapper.toProductResponseDTO(products.get(i)));
+            }
+            return response;
+            
+        }
+        return null;
+    }
+
+    public List<productResponseDTO> getBestQP() {
+
+        List<Product> productes = repo.findBestQp();
+        List<productResponseDTO> response = new ArrayList<>();
+        List<Product> top5;
+
+        if (productes.size() > 5){
+            top5 = productes.subList(0, 5);
+        } else {
+            top5 = productes;
+        }
+
+        for (Product p: top5){
+            response.add(mapper.toProductResponseDTO(p));
+        }
+
+        return response;
+    }
+
+    
 
 
 

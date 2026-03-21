@@ -1,6 +1,6 @@
 package ivha.jpa.project2.Controller;
 
-import java.awt.image.RescaleOp;
+
 import java.util.List;
 
 import org.springframework.beans.factory.annotation.Autowired;
@@ -73,6 +73,57 @@ public class ProductController {
             return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body("Error al modificar el producte");
         }
     }
+    
+    // Borrat físic d'un producte
+    @DeleteMapping("/products/{id}")
+    public ResponseEntity<String> deleteProduct(@PathVariable long id){
+        try {
+            service.deleteProduct(id);
+            return ResponseEntity.ok("Producte eliminat");
+        } catch (Exception e) {
+            return ResponseEntity.status(HttpStatus.BAD_REQUEST).body("No s'ha pogut eliminar el producte");
+        }
+    }
+
+    // Punt 4 - Consultes bàsiques amb Query Method
+    
+    @GetMapping("/products/search/nom")
+    public ResponseEntity<List<productResponseDTO>> searchByNom(@RequestParam String prefix) {
+        try {
+            List<productResponseDTO> products = service.searchByNom(prefix);
+            return ResponseEntity.ok(products);    
+        } catch (Exception e) {
+            return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(null);
+        }
+        
+    }
+
+    @GetMapping("/products/search/order")
+    public ResponseEntity<List<productResponseDTO>> searchByField(@RequestParam String camp, @RequestParam String order) {
+        List<productResponseDTO> products = service.searchByField(camp, order);
+        return ResponseEntity.ok(products);
+    }
+
+    // Punt 5 -  Consultes amb JPQL
+
+    @GetMapping("/products/search/order2")
+    public ResponseEntity<List<productResponseDTO>> searchByField(
+        @RequestParam String camp, @RequestParam String order, @RequestParam float priceMin, @RequestParam float priceMax, @RequestParam int limit
+    ) {
+        List<productResponseDTO> products = service.searchByField(camp, order, priceMin, priceMax, limit);
+        return ResponseEntity.ok(products);
+    }
+
+    @GetMapping("/products/bestQP")
+    public ResponseEntity<List<productResponseDTO>> getBestQP() {
+        List<productResponseDTO> products = service.getBestQP();
+        return ResponseEntity.ok(products);
+    }
+
+    
+    
+    
+    
 
 
     // modificar preu producte
