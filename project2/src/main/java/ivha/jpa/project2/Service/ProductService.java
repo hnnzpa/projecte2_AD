@@ -34,14 +34,12 @@ public class ProductService {
     ProductMapper mapper;
 
 
-    // Punt 2 - Càrrega massiva de dades d’un fitxer en format .csv
+    // Punt 2 - Càrrega massiva de dades d’un fitxer en format .csv amb transactional
+    // Carrega tots els registres o cap
 
     @Transactional
-    public int createProducts(MultipartFile csv) throws IOException{
+    public void createProducts(MultipartFile csv) throws IOException{
 
-        int comptador = 0;
-
-        
         Timestamp now = new Timestamp(System.currentTimeMillis());
         // Llegim amb buffered reader
         try(BufferedReader br = new BufferedReader(new InputStreamReader(csv.getInputStream()))){
@@ -59,7 +57,6 @@ public class ProductService {
                         Boolean.parseBoolean(c[6]),
                         now,
                         now));
-                    comptador++;
                 } catch(Exception e){
                     System.err.println("Error en el guardat d'un registre: " + e.getMessage());
                 }
@@ -67,7 +64,7 @@ public class ProductService {
 
         } catch (IOException e){
             System.err.println("Error d'accès al fitxer: " + e.getMessage());
-            return -1;
+            throw e;
         }
         String dir = "src/main/resources/private/csv_processed";
         Path directory = Paths.get(dir);
@@ -83,8 +80,6 @@ public class ProductService {
             System.err.println("No s'ha pogut guardar el csv");
             
         }
-        // Retornem registres creats
-        return comptador;
     }
 
     // Punt 3 - Endpoints simples
@@ -123,10 +118,13 @@ public class ProductService {
     }
 
     // Punt 4 - Consultes bàsiques amb Query Method
+
+    // Búsqueda per prefix
     public List<productResponseDTO> searchByNom(String prefix) {
         List<Product> productes = repo.findByNomStartingWithAndActiveTrue(prefix);
         List<productResponseDTO> response = new ArrayList<>();
 
+        // Mapejem a productResponseDTO amb la capa mapper
         for (Product p: productes){
             response.add(mapper.toProductResponseDTO(p));
         }
@@ -134,6 +132,7 @@ public class ProductService {
         return response;
     }
 
+    // Ordena els productes ascendent o descendent en funció del camp passat per paràmetre
     public List<productResponseDTO> searchByField(String camp, String order) {
         if (!(order.equals("asc") || order.equals("desc"))){
             throw new UnsupportedOperationException ("order ha der ser 'asc' o 'desc'");
@@ -157,8 +156,9 @@ public class ProductService {
         return null;
     }
 
-    // Punt 5 -  Consultes amb JPQL
+    // Punt 5 - Consultes amb JPQL
 
+    // Cerca amb un límit de preu mínim i màxim i ordena per camp asc o desc
     public List<productResponseDTO> searchByField(String camp, String order, float priceMin, float priceMax, int limit) {
         if (!(order.equals("asc") || order.equals("desc"))){
             throw new UnsupportedOperationException ("order ha der ser 'asc' o 'desc'");
@@ -201,6 +201,7 @@ public class ProductService {
         return null;
     }
 
+    // Retorna els productes amb millor relació rating/preu
     public List<productResponseDTO> getBestQP() {
 
         List<Product> productes = repo.findBestQp();

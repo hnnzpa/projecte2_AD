@@ -92,7 +92,8 @@ public class ProductController {
     }
 
     // Punt 4 - Consultes bàsiques amb Query Method
-    
+
+    // Busca un producte per prefix, busca coincidencia amb l'inici del nom
     @GetMapping("/products/search/nom")
     public ResponseEntity<List<productResponseDTO>> searchByNom(@RequestParam String prefix) {
         try {
@@ -104,26 +105,42 @@ public class ProductController {
         
     }
 
+    // Ordena els productes per preu o rating ascendent o descendent
     @GetMapping("/products/search/order")
     public ResponseEntity<List<productResponseDTO>> searchByField(@RequestParam String camp, @RequestParam String order) {
-        List<productResponseDTO> products = service.searchByField(camp, order);
-        return ResponseEntity.ok(products);
+        try {
+            List<productResponseDTO> products = service.searchByField(camp, order);
+            return ResponseEntity.ok(products);
+        } catch (Exception e) {
+            return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(null);
+        }
+        
     }
 
     // Punt 5 -  Consultes amb JPQL
 
+    // Ordena els productes per preu o rating ascendent o descendent amb limits de preu mínim i màxim
     @GetMapping("/products/search/order2")
     public ResponseEntity<List<productResponseDTO>> searchByField(
         @RequestParam String camp, @RequestParam String order, @RequestParam float priceMin, @RequestParam float priceMax, @RequestParam int limit
     ) {
-        List<productResponseDTO> products = service.searchByField(camp, order, priceMin, priceMax, limit);
-        return ResponseEntity.ok(products);
+        try {
+            List<productResponseDTO> products = service.searchByField(camp, order, priceMin, priceMax, limit);
+            return ResponseEntity.ok(products);
+        } catch (Exception e) {
+            return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(null);
+        }
     }
 
+    // Retorna els 5 productes amb millor relació rating/preu
     @GetMapping("/products/bestQP")
     public ResponseEntity<List<productResponseDTO>> getBestQP() {
-        List<productResponseDTO> products = service.getBestQP();
-        return ResponseEntity.ok(products);
+        try {
+            List<productResponseDTO> products = service.getBestQP();
+            return ResponseEntity.ok(products);
+        } catch (Exception e) {
+            return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(null);
+        }
     }
 
     
