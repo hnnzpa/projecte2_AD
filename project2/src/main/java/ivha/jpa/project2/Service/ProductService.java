@@ -109,6 +109,7 @@ public class ProductService {
         }
         Product producte = p.get();
         producte.setStock(stock);
+        repo.save(producte);
         return true;
     }
 
@@ -185,9 +186,9 @@ public class ProductService {
 
         if (camp.equals("rating")){
             if (order.equals("asc")){
-                products = repo.findByPriceAsc(priceMin, priceMax);
+                products = repo.findByRatingAsc(priceMin, priceMax);
             } else {
-                products = repo.findByPriceDesc(priceMin, priceMax);
+                products = repo.findByRatingDesc(priceMin, priceMax);
             }
 
             if (limit > products.size()) limit = products.size();
