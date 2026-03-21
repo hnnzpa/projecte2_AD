@@ -3,7 +3,6 @@ package ivha.jpa.project2.DTO;
 import ivha.jpa.project2.Model.Condition;
 
 public class productRequestDTO {
-
     private String nom;
     private String descripcio;
     private Integer stock;

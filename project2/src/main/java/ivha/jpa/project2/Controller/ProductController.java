@@ -2,6 +2,7 @@ package ivha.jpa.project2.Controller;
 
 
 import java.util.List;
+import java.util.Optional;
 
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
@@ -11,6 +12,7 @@ import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PatchMapping;
 import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.PostMapping;
+import org.springframework.web.bind.annotation.PutMapping;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestParam;
@@ -29,6 +31,18 @@ public class ProductController {
     @Autowired
     ProductService service;
 
+
+    @PostMapping("/seed")
+    public ResponseEntity<String> seedDatabase() {
+        try {
+            service.loadFakeData();
+            return ResponseEntity.ok("20 productes creats amb èxit a la base de dades!");
+        } catch (Exception e) {
+            return ResponseEntity.internalServerError().body("Error: " + e.getMessage());
+        }
+    }
+
+
     // Punt 2 - Càrrega massiva de dades d’un fitxer en format .csv
     @PostMapping("products/batch")
     public ResponseEntity<String> importProducts(@RequestBody MultipartFile csv) {
@@ -45,16 +59,16 @@ public class ProductController {
 
     // consultar un producte x id
     @GetMapping("/product/{id}")
-    public ResponseEntity<Product> getProductById(@PathVariable Long id){
+    public ResponseEntity<productResponseDTO> getProductById(@PathVariable Long id){
         try{
-            Product product = service.getProductById(id);
+            productResponseDTO product = service.getProductById(id);
             if(product != null){
                 return ResponseEntity.ok(product);
             } else {
-                return ResponseEntity.status(HttpStatus.NOT_FOUND).body("Producte no trobat");
+                return ResponseEntity.notFound().build(); // retornem un 404 si no trobem el producte
             }
         } catch (Exception e){
-            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body("Error al consultar el producte");
+            return ResponseEntity.internalServerError().build(); // retornem un 500 en cas d'un error inesperat 
         }
     }
 
@@ -73,6 +87,37 @@ public class ProductController {
             return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body("Error al modificar el producte");
         }
     }
+
+    // modificar preu producte
+    @PatchMapping("/product/update/preu/{id}")
+    public ResponseEntity<String> updatePreuProducte(@PathVariable Long id, @RequestBody double preu){
+        try{
+            boolean updated = service.updatePreuProducte(id, preu);
+            if(updated){
+                return ResponseEntity.ok("Preu del producte actualitzat");
+            } else {
+                return ResponseEntity.status(HttpStatus.NOT_FOUND).body("Producte no trobat");
+            }
+        } catch (Exception e){
+            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body("Error al modificar el preu del producte");
+        }
+    }
+
+    // borrat lògic d'un producte
+    @DeleteMapping("/product/logic/delete/{id}")
+    public ResponseEntity<String> deleteProductLogic(@PathVariable Long id){
+        try{
+            boolean deleted = service.deleteProductLogic(id);
+            if(deleted){
+                return ResponseEntity.ok("Producte eliminat lògicament");
+            } else {
+                return ResponseEntity.status(HttpStatus.NOT_FOUND).body("Producte no trobat");
+            }
+        } catch (Exception e){
+            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body("Error al eliminar el producte");
+        }
+    }
+
     
     // Borrat físic d'un producte
     @DeleteMapping("/products/{id}")
@@ -136,43 +181,5 @@ public class ProductController {
             return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(null);
         }
     }
-
-    
-    
-    
-    
-
-
-    // modificar preu producte
-    @PatchMapping("/product/update/preu/{id}")
-    public ResponseEntity<String> updatePreuProducte(@PathVariable Long id, @RequestBody double preu){
-        try{
-            boolean updated = service.updatePreuProducte(id, preu);
-            if(updated){
-                return ResponseEntity.ok("Preu del producte actualitzat");
-            } else {
-                return ResponseEntity.status(HttpStatus.NOT_FOUND).body("Producte no trobat");
-            }
-        } catch (Exception e){
-            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body("Error al modificar el preu del producte");
-        }
-    }
-
-    // borrat lògic d'un producte
-    @DeleteMapping("/product/logic/delete/{id}")
-    public ResponseEntity<String> deleteProductLogic(@PathVariable Long id){
-        try{
-            boolean deleted = service.deleteProductLogic(id);
-            if(deleted){
-                return ResponseEntity.ok("Producte eliminat lògicament");
-            } else {
-                return ResponseEntity.status(HttpStatus.NOT_FOUND).body("Producte no trobat");
-            }
-        } catch (Exception e){
-            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body("Error al eliminar el producte");
-        }
-    }
-
-
 
 }

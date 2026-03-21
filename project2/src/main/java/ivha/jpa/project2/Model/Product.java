@@ -31,23 +31,9 @@ public class Product {
     }
 
 
-    public Product(Long id, String nom, String descripcio, Integer stock, Float preu, Float rating,
+    public Product(Long id, String nom, String descripcio, Integer stock, Float price, Float rating,
             Condition condition, boolean active, Timestamp dateCreated, Timestamp dateUpdated) {
         this.id = id;
-        this.nom = nom;
-        this.descripcio = descripcio;
-        this.stock = stock;
-        this.preu = preu;
-        this.rating = rating;
-        this.condition = condition;
-        this.active = active;
-        this.dateCreated = dateCreated;
-        this.dateUpdated = dateUpdated;
-    }
-
-    public Product(String nom, String descripcio, Integer stock, Float price, Float rating,
-            Condition condition, boolean active, Timestamp dateCreated, Timestamp dateUpdated) {
-        
         this.nom = nom;
         this.descripcio = descripcio;
         this.stock = stock;
@@ -114,13 +100,13 @@ public class Product {
     }
 
 
-    public Float getPreu() {
-        return preu;
+    public Float getPrice() {
+        return price;
     }
 
 
-    public void setPreu(Float preu) {
-        this.preu = preu;
+    public void setPrice(Float price) {
+        this.price = price;
     }
 
 
