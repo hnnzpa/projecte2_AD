@@ -45,8 +45,8 @@ public class ProductService {
             p.setDescripcio("Descripció del producte " + (i + 1));
             p.setStock(10 + i);
             p.setPrice(10.0f * (i + 1));
-            p.setRating(3.0f + (i % 2));
-            p.setCondition(Condition.NOU); // Asegúrate de que el Enum exista
+            p.setRating((float) (i % 10 + 1)); // Rating entre 1 i 10
+            p.setCondition(Condition.NOU); 
             p.setActive(true);
             // JPA gestionará el ID y las fechas si usas @UpdateTimestamp
             products.add(p);
@@ -235,7 +235,7 @@ public class ProductService {
         return response;
     }
 
-    // Ordena els productes ascendent o descendent en funció del camp passat per paràmetre
+    // Ordena els productes ascendent o descendent en funció del camp passat per paràmetre (preu o rating)
     public List<productResponseDTO> searchByField(String camp, String order) {
         if (!(order.equals("asc") || order.equals("desc"))){
             throw new UnsupportedOperationException ("order ha der ser 'asc' o 'desc'");
@@ -256,8 +256,35 @@ public class ProductService {
             return response;
             
         }
+
+        // camp = rating
+        if(camp.equals("rating")){
+            if (order.equals("asc")){
+                products = repo.findByActiveTrueOrderByRatingAsc();
+            } else {
+                products = repo.findByActiveTrueOrderByRatingDesc();
+            }
+            for (Product p: products){
+                response.add(mapper.toProductResponseDTO(p));
+            }
+            return response;
+            
+        }
+
         return null;
     }
+
+    public List<productResponseDTO> findByCondition(Condition condition) {
+        List<Product> productes = repo.findByConditionAndActiveTrue(condition);
+        List<productResponseDTO> response = new ArrayList<>();
+
+        for (Product p: productes){
+                response.add(mapper.toProductResponseDTO(p));
+        }
+        return response;
+    }
+
+
 
     // Punt 5 - Consultes amb JPQL
 
@@ -322,6 +349,69 @@ public class ProductService {
         }
 
         return response;
+    }
+
+
+    //!!!!! Cual es el campo???? Retorna els productes amb el preu superior del indicat en el minPrice
+    public List<productResponseDTO> findByPriceMin(String camp, String order, float priceMin, int limit) {
+        if (!(order.equals("asc") || order.equals("desc"))){
+            throw new UnsupportedOperationException ("order ha der ser 'asc' o 'desc'");
+        }
+
+        List<Product> productes;
+        List<productResponseDTO> response = new ArrayList<>();
+        if (camp.equals("preuMinim")){
+            if (order.equals("asc")){
+                productes = repo.findByPriceMinAsc(priceMin);
+            } else {
+                productes = repo.findByPriceMinDesc(priceMin);
+            }
+        } else {
+            throw new UnsupportedOperationException ("camp ha de ser 'preuMinim'");
+        }
+        
+        for (Product p: productes){
+            response.add(mapper.toProductResponseDTO(p));
+        }
+        return response;
+    }
+
+
+
+    // Retorna els 10 productes nous amb millor rating (valoracio)
+    public List<productResponseDTO> getBestNew(){
+        List<Product> productes = repo.getBN(Condition.NOU);
+        List<productResponseDTO> response = new ArrayList<>();
+        List<Product> primers10;
+
+        if (productes.size() > 10){
+            primers10 = productes.subList(0, 10);
+        } else {
+            primers10 = productes;
+        }
+
+        for (Product p: primers10){
+            response.add(mapper.toProductResponseDTO(p));
+        }
+
+        return response;
+    }
+
+    // Punt 6 - Paginació
+
+    //Retorna els productes en blocs de 5
+    public List<productResponseDTO> get5Products(int pag, int size){
+        List<Product> productes = repo.findAll();
+        List<productResponseDTO> response = new ArrayList<>();
+        
+        for (Product p: productes){
+            response.add(mapper.toProductResponseDTO(p));
+        }
+
+        return response.stream()
+            .skip((pag - 1) * size)
+            .limit(size)
+            .toList();
     }
 
 }

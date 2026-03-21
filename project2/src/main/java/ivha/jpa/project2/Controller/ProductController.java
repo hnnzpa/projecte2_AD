@@ -21,6 +21,7 @@ import org.springframework.web.multipart.MultipartFile;
 
 import ivha.jpa.project2.DTO.productRequestDTO;
 import ivha.jpa.project2.DTO.productResponseDTO;
+import ivha.jpa.project2.Model.Condition;
 import ivha.jpa.project2.Service.ProductService;
 
 
@@ -144,6 +145,7 @@ public class ProductController {
         
     }
 
+
     // Ordena els productes per preu o rating ascendent o descendent
     @GetMapping("/products/search/order")
     public ResponseEntity<List<productResponseDTO>> searchByField(@RequestParam String camp, @RequestParam String order) {
@@ -155,6 +157,20 @@ public class ProductController {
         }
         
     }
+
+
+    // Busca productes per condició
+    @GetMapping("/products/search/condition")
+    public ResponseEntity<List<productResponseDTO>> findByCondition(@RequestParam("condition") Condition condition) {
+        System.out.println("He recibido la peticion con: " + condition);
+        try {
+            List<productResponseDTO> products = service.findByCondition(condition);
+            return ResponseEntity.ok(products);
+        } catch (Exception e) {
+            return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(null);
+        }
+    }
+
 
     // Punt 5 -  Consultes amb JPQL
 
@@ -179,6 +195,45 @@ public class ProductController {
             return ResponseEntity.ok(products);
         } catch (Exception e) {
             return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(null);
+        }
+    }
+
+
+    // Retorna productes amb preu superior al indicat i estigui active true
+    @GetMapping("/products/search/order3")
+    public ResponseEntity<List<productResponseDTO>> findByPriceMin( 
+        @RequestParam(defaultValue = "preuMinim") String camp, @RequestParam(defaultValue = "desc") String order, @RequestParam float priceMin, @RequestParam int limit
+    ) {
+        try {
+            List<productResponseDTO> products = service.findByPriceMin(camp, order, priceMin, limit);
+            return ResponseEntity.ok(products);
+        } catch (Exception e) {
+            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body(null);
+        }
+    }
+
+    //Obtenir els productes més nous i millor valorats (menor preu major rating)
+    @GetMapping("/products/bestNew")
+    public ResponseEntity<List<productResponseDTO>> getBestNew() {
+        try {
+            List<productResponseDTO> products = service.getBestNew();
+            return ResponseEntity.ok(products);
+        } catch (Exception e) {
+            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body(null);
+        }
+    }
+
+    //Retorna productes en blocs de 5
+    @GetMapping("/products/get5")
+    public ResponseEntity<List<productResponseDTO>> get5Products(
+        @RequestParam(defaultValue = "1") int pag,
+        @RequestParam(defaultValue = "5") int size
+    ) {
+        try {
+            List<productResponseDTO> products = service.get5Products(pag, size);
+            return ResponseEntity.ok(products);
+        } catch (Exception e) {
+            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body(null);
         }
     }
 
