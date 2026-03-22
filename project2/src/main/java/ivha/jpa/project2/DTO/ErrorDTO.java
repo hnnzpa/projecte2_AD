@@ -1,18 +1,12 @@
 package ivha.jpa.project2.DTO;
 
 public class ErrorDTO {
-    private String error;
+    private int status;
+    private String message;
 
-    public ErrorDTO(String error) {
-        this.error = error;
-    }
-
-    public String getError() {
-        return error;
-    }
-
-    public void setError(String error) {
-        this.error = error;
+    public ErrorDTO(int status, String message) {
+        this.status = status;
+        this.message = message;
     }
 
 }
