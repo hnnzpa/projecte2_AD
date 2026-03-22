@@ -87,7 +87,7 @@ public class ProductService {
 
     // Consultar tots els productes
     public List<productResponseDTO> findAllProducts() {
-        List<Product> productes =  repo.findAll();
+        List<Product> productes =  repo.findAllAndActiveTrue();
         List<productResponseDTO> response = new ArrayList<>();
 
         for (Product p: productes){
