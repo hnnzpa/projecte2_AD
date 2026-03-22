@@ -331,27 +331,33 @@ public class ProductService {
     }
 
 
-    //!!!!! Cual es el campo???? Retorna els productes amb el preu superior del indicat en el minPrice
-    public List<productResponseDTO> findByPriceMin(String camp, String order, float priceMin, int limit) {
+    //Retorna els productes amb el rating entre el maxim i el minim del indicat y en el orde de preu o rating
+    public List<productResponseDTO> findByPriceMin(String camp, String order, float ratingMin, float ratingMax, int limit) {
         if (!(order.equals("asc") || order.equals("desc"))){
             throw new UnsupportedOperationException ("order ha der ser 'asc' o 'desc'");
         }
 
-        List<Product> productes;
+        List<Product> productes = new ArrayList<>();
         List<productResponseDTO> response = new ArrayList<>();
-        if (camp.equals("preuMinim")){
+
+        if(camp.equals("preu")){
             if (order.equals("asc")){
-                productes = repo.findByPriceMinAsc(priceMin);
+                productes = repo.findByRatingOrderPreu(order, ratingMin, ratingMax);
             } else {
-                productes = repo.findByPriceMinDesc(priceMin);
+                productes = repo.findByRatingOrderPreu(order, ratingMin, ratingMax);
             }
-        } else {
-            throw new UnsupportedOperationException ("camp ha de ser 'preuMinim'");
+        }else if(camp.equals("rating")){
+            if (order.equals("asc")){
+                productes = repo.findByRatingOrderRating(order, ratingMin, ratingMax);
+            } else {
+                productes = repo.findByRatingOrderRating(order, ratingMin, ratingMax);
+            }
         }
         
         for (Product p: productes){
             response.add(mapper.toProductResponseDTO(p));
         }
+
         return response;
     }
 
@@ -361,19 +367,14 @@ public class ProductService {
     public List<productResponseDTO> getBestNew(){
         List<Product> productes = repo.getBN(Condition.NOU);
         List<productResponseDTO> response = new ArrayList<>();
-        List<Product> primers10;
 
-        if (productes.size() > 10){
-            primers10 = productes.subList(0, 10);
-        } else {
-            primers10 = productes;
-        }
-
-        for (Product p: primers10){
+        for (Product p: productes){
             response.add(mapper.toProductResponseDTO(p));
         }
 
-        return response;
+        return response.stream()
+            .limit(10)
+            .toList();
     }
 
     // Punt 6 - Paginació

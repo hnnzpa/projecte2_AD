@@ -230,10 +230,10 @@ public class ProductController {
     // Retorna productes amb preu superior al indicat i estigui active true
     @GetMapping("/products/search/order3")
     public ResponseEntity<?> findByPriceMin( 
-        @RequestParam(defaultValue = "preuMinim") String camp, @RequestParam(defaultValue = "desc") String order, @RequestParam float priceMin, @RequestParam int limit
+        @RequestParam String camp, @RequestParam(defaultValue = "desc") String order, @RequestParam float ratingMin, @RequestParam float ratingMax, @RequestParam int limit
     ) {
         try {
-            List<productResponseDTO> products = service.findByPriceMin(camp, order, priceMin, limit);
+            List<productResponseDTO> products = service.findByPriceMin(camp, order, ratingMin, ratingMax, limit);
             return ResponseEntity.ok(products);
         } catch (Exception e) {
             return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body(new ErrorDTO(HttpStatus.INTERNAL_SERVER_ERROR.value(),e.getMessage()));

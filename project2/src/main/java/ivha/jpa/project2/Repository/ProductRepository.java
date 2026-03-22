@@ -48,16 +48,19 @@ public interface ProductRepository extends JpaRepository<Product, Long> {
     @Query("SELECT p FROM Product p " +
         "WHERE p.condition = :cond " +
         "AND p.active = true " +
-        "AND p.rating = (SELECT MAX(p2.rating) FROM Product p2 WHERE p2.condition = :cond AND p2.active = true)")    
+        "order by p.rating desc")    
     List<Product> getBN(@Param("cond") Condition cond);
 
-    // Retorna els productes amb el preu minim indicat ascendentment
-    @Query("select p from Product p where p.price >= :priceMin and p.active = true order by (p.rating) asc")
-    List<Product> findByPriceMinAsc(float priceMin);
+    // Retorna els productes entre el rating minim i maxim indicat i ordenats per el preu ascendent o descendent
+    @Query("select p from Product p where p.rating >= :ratingMin and p.rating <= :ratingMax and p.active = true order by " +
+        "case when :order = 'asc' then p.price end asc, " +
+        "case when :order = 'desc' then p.price end desc")
+    List<Product> findByRatingOrderPreu(@Param("order") String order, @Param("ratingMin") float ratingMin, @Param("ratingMax") float ratingMax);
 
-    // Retorna els productes amb el preu minim indicat descendentment
-    @Query("select p from Product p where p.price >= :priceMin and p.active = true order by (p.rating) desc")
-    List<Product> findByPriceMinDesc(float priceMin);
-
+    // Retorna els productes entre el rating minim i maxim indicat i ordenats per el rating ascendent o descendent
+    @Query("select p from Product p where p.rating >= :ratingMin and p.rating <= :ratingMax and p.active = true order by " +
+        "case when :order = 'asc' then p.rating end asc, " +
+        "case when :order = 'desc' then p.rating end desc")
+    List<Product> findByRatingOrderRating(@Param("order") String order, @Param("ratingMin") float ratingMin, @Param("ratingMax") float ratingMax);
 
 }
