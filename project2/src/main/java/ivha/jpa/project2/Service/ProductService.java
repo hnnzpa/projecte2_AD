@@ -33,27 +33,6 @@ public class ProductService {
     @Autowired
     ProductMapper mapper;
 
-    public void loadFakeData() {
-        List<Product> products = new ArrayList<>();
-        
-        // Datos para crear 20 productos
-        String[] noms = {"Smartphone", "Portàtil", "Auriculars", "Monitor", "Teclat", "Ratolí", "Càmera", "Tauleta", "Disc Dur", "Altaveu", "Cadira", "Smartwatch", "Impressora", "Microfon", "Router", "Webcam", "Bateria", "Projector", "MicroSD", "Ventilador"};
-        
-        for (int i = 0; i < 20; i++) {
-            Product p = new Product();
-            p.setNom(noms[i] + " " + (i + 1));
-            p.setDescripcio("Descripció del producte " + (i + 1));
-            p.setStock(10 + i);
-            p.setPrice(10.0f * (i + 1));
-            p.setRating((float) (i % 10 + 1)); // Rating entre 1 i 10
-            p.setCondition(Condition.NOU); 
-            p.setActive(true);
-            // JPA gestionará el ID y las fechas si usas @UpdateTimestamp
-            products.add(p);
-        }
-        
-        repo.saveAll(products);
-    }
 
 
     // Punt 2 - Càrrega massiva de dades d’un fitxer en format .csv amb transactional

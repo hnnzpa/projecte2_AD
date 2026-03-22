@@ -9,4 +9,13 @@ public class ErrorDTO {
         this.message = message;
     }
 
+    public int getStatus() {
+        return status;
+    }
+
+    public String getMessage() {
+        return message;
+    }
+    
+    
 }

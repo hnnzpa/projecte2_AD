@@ -33,17 +33,6 @@ public class ProductController {
     ProductService service;
 
 
-    @PostMapping("/seed")
-    public ResponseEntity<?> seedDatabase() {
-        try {
-            service.loadFakeData();
-            return ResponseEntity.ok("20 productes creats amb èxit a la base de dades!");
-        } catch (Exception e) {
-            return ResponseEntity.internalServerError().body(new ErrorDTO(HttpStatus.INTERNAL_SERVER_ERROR.value(),e.getMessage()));
-        }
-    }
-
-
     // Punt 2 - Càrrega massiva de dades d’un fitxer en format .csv
     @PostMapping("products/batch")
     public ResponseEntity<?> importProducts(@RequestBody MultipartFile csv) {
@@ -55,6 +44,56 @@ public class ProductController {
         }
     }
 
+     // Punt 3 - Endpoints simples
+
+    // Consultar tots els productes
+    @GetMapping("/products")
+    public ResponseEntity<?> findAllProducts() {
+        try {
+            List<productResponseDTO> products = service.findAllProducts();
+            return ResponseEntity.ok(products);
+        } catch (Exception e) {
+            return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(new ErrorDTO(HttpStatus.BAD_REQUEST.value(),e.getMessage()));
+        }
+        
+    }
+
+    // Afegir un producte
+    @PostMapping("/products")
+    public ResponseEntity<?> createProduct(@RequestBody productRequestDTO product) {
+        try {
+            service.createProduct(product);
+            return ResponseEntity.ok("S'ha creat el producte");
+        } catch (Exception e) {
+            return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(new ErrorDTO(HttpStatus.BAD_REQUEST.value(),e.getMessage()));
+        }
+        
+    }
+    
+    // Modificar l’estoc de productes
+    @PatchMapping("/products/{id}/stock/{stock}")
+    public ResponseEntity<?> updateStock(@PathVariable long id, @PathVariable int stock){
+        try{    
+            if (service.updateStock(id, stock)){
+               return ResponseEntity.ok("Modificat l'estoc del producte"); 
+            }
+            return ResponseEntity.status(HttpStatus.NOT_FOUND).body(new ErrorDTO(HttpStatus.NOT_FOUND.value(),"No s'ha trobat el producte"));
+  
+        } catch (Exception e){
+            return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(new ErrorDTO(HttpStatus.BAD_REQUEST.value(),e.getMessage()));
+        }
+    }
+    
+    // Borrat físic d'un producte
+    @DeleteMapping("/products/{id}")
+    public ResponseEntity<?> deleteProduct(@PathVariable long id){
+        try {
+            service.deleteProduct(id);
+            return ResponseEntity.ok("Producte eliminat");
+        } catch (Exception e) {
+            return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(new ErrorDTO(HttpStatus.BAD_REQUEST.value(),e.getMessage()));
+        }
+    }
 
 
 
@@ -119,17 +158,6 @@ public class ProductController {
         }
     }
 
-    
-    // Borrat físic d'un producte
-    @DeleteMapping("/products/{id}")
-    public ResponseEntity<?> deleteProduct(@PathVariable long id){
-        try {
-            service.deleteProduct(id);
-            return ResponseEntity.ok("Producte eliminat");
-        } catch (Exception e) {
-            return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(new ErrorDTO(HttpStatus.BAD_REQUEST.value(),e.getMessage()));
-        }
-    }
 
     // Punt 4 - Consultes bàsiques amb Query Method
 
