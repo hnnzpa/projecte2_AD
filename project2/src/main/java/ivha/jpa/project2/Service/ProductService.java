@@ -408,6 +408,7 @@ public class ProductService {
             response.add(mapper.toProductResponseDTO(p));
         }
 
+        //limitem la resposta a la size indicada amb steam
         return response.stream()
             .skip((pag - 1) * size)
             .limit(size)
