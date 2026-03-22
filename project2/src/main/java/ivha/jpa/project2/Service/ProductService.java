@@ -123,9 +123,9 @@ public class ProductService {
     //obtenir un producte per id
         public productResponseDTO getProductById(Long id){
             try{
-                Optional<Product> p = repo.findById(id);
-                if(p.isPresent()){
-                    return mapper.toProductResponseDTO(p.get());
+                Product p = repo.findByIdAndActiveTrue(id);
+                if(p != null){
+                    return mapper.toProductResponseDTO(p);
                 } else {
                     return null;
                 }
