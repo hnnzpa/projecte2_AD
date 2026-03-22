@@ -13,6 +13,8 @@ import ivha.jpa.project2.Model.Condition;
 
 public interface ProductRepository extends JpaRepository<Product, Long> {
 
+    public Product findByIdAndActiveTrue(Long id);
+
     // Punt 4 - Consultes bàsiques amb Query Method
     public List<Product>  findByNomStartingWithAndActiveTrue(String nom);
     public List<Product> findByActiveTrueOrderByPriceAsc();
