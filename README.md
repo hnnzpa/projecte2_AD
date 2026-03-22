@@ -19,3 +19,5 @@ Segon projecte d Acces a Dades:
 
 Integrant 1: Ivan
 Integrant 2: Hanna
+
+Enllaç al video: https://youtu.be/BSA0W7eegik
