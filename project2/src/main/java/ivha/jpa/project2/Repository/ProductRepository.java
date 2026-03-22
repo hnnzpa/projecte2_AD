@@ -41,12 +41,11 @@ public interface ProductRepository extends JpaRepository<Product, Long> {
     @Query("select p from Product p where p.active = true order by (p.rating / p.price) desc")
     List<Product> findBestQp();
 
-    //Retorna els mes nous i millor valorats (menor preu major rating)
+    //Retorna els mes nous i millor valorats (rating)
     @Query("SELECT p FROM Product p " +
         "WHERE p.condition = :cond " +
         "AND p.active = true " +
-        "AND p.rating = (SELECT MAX(p2.rating) FROM Product p2 WHERE p2.condition = :cond AND p2.active = true)" +
-        "AND p.price = (SELECT MIN(p2.price) FROM Product p2 WHERE p2.condition = :cond AND p2.active = true)")    
+        "AND p.rating = (SELECT MAX(p2.rating) FROM Product p2 WHERE p2.condition = :cond AND p2.active = true)")    
     List<Product> getBN(@Param("cond") Condition cond);
 
     // Retorna els productes amb el preu minim indicat ascendentment
