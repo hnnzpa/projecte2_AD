@@ -87,7 +87,7 @@ public class ProductService {
 
     // Consultar tots els productes
     public List<productResponseDTO> findAllProducts() {
-        List<Product> productes =  repo.findAllAndActiveTrue();
+        List<Product> productes =  repo.findByActiveTrue();
         List<productResponseDTO> response = new ArrayList<>();
 
         for (Product p: productes){
@@ -332,7 +332,7 @@ public class ProductService {
 
 
     //Retorna els productes amb el rating entre el maxim i el minim del indicat y en el orde de preu o rating
-    public List<productResponseDTO> findByPriceMin(String camp, String order, float ratingMin, float ratingMax, int limit) {
+    public List<productResponseDTO> findByRatingMin(String camp, String order, float ratingMin, float ratingMax, int limit) {
         if (!(order.equals("asc") || order.equals("desc"))){
             throw new UnsupportedOperationException ("order ha der ser 'asc' o 'desc'");
         }

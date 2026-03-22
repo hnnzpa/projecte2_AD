@@ -6,14 +6,14 @@ import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.data.jpa.repository.Query;
 import org.springframework.data.repository.query.Param;
 
-import ivha.jpa.project2.Model.Product;
 import ivha.jpa.project2.Model.Condition;
+import ivha.jpa.project2.Model.Product;
 
 
 
 public interface ProductRepository extends JpaRepository<Product, Long> {
 
-    public List<Product> findAllAndActiveTrue();
+    public List<Product> findByActiveTrue();
     public Product findByIdAndActiveTrue(Long id);
 
     // Punt 4 - Consultes bàsiques amb Query Method
